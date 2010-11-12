@@ -1,4 +1,4 @@
-This is my mkinitrd script, to generate an initrd image for booting systems 
+This is my mkinitrd script, to generate an initramfs image for booting systems 
 which use lvm2 on top of md.
 
 The code is largely inspired by/based upon 
@@ -16,4 +16,4 @@ Features:
       mdadm.conf (copied from the live filesystem)
     * lvm2's autodetection features are used
 * If something goes wrong, you get a bash shell (and an opportunity to fix it): 
-  this initrd is not suitable for noobs :-)
+  this initramfs image is not suitable for noobs :-)
