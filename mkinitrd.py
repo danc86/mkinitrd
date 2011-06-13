@@ -69,6 +69,10 @@ def main():
     install_binary('/sbin/udevadm')
     install_config('/etc/mdadm.conf')
     install_binary('/sbin/mdadm')
+    for binary in glob('/sbin/fsck*'):
+        install_binary(binary)
+    install_binary('/sbin/dmsetup')
+    install_binary('/sbin/blkid')
     install_binary('/sbin/lvm')
     for program in ['lvchange', 'lvconvert', 'lvcreate', 'lvdisplay', 
             'lvextend', 'lvmchange', 'lvmdiskscan', 'lvmsadc', 'lvmsar', 'lvreduce', 
@@ -80,6 +84,7 @@ def main():
         install_symlink('/sbin/%s' % program, 'lvm')
     install_binary('/usr/bin/cat')
     install_binary('/usr/bin/ls')
+    install_binary('/usr/bin/ln')
     install_binary('/usr/bin/ed')
     install_binary('/usr/bin/less')
     install_binary('/usr/bin/mkdir')
@@ -129,6 +134,7 @@ edo vgchange --quiet -a y
 root_mounted=""
 for arg in $cmdline ; do
     if [[ "$arg" == root=* ]] ; then
+        edo fsck -a "${arg:5}"
         edo mount -n -r "${arg:5}" /newroot
         root_mounted="true"
         break
@@ -137,6 +143,7 @@ done
 edo [ $root_mounted ]
 ( while read -r dev mountpoint type opts rest ; do
     if [[ "$dev" != \#* ]] && [[ "$mountpoint" == /usr ]] ; then
+        edo fsck -a "$dev"
         edo mount -n -r -t "$type" -o "$opts" "$dev" /newroot/usr
         break
     fi
