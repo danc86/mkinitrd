@@ -142,6 +142,14 @@ edo udevadm settle
 edo mdadm --quiet --assemble --scan
 edo vgchange -a y
 
+# pass fixme in kernel args to get a shell for fixing things
+for arg in $cmdline ; do
+    if [[ "$arg" == fixme ]] ; then
+        ( export PS1='fixme$ ' ; bash )
+        break
+    fi
+done
+
 # the important bit: mount root, and /usr if defined
 root_mounted=""
 for arg in $cmdline ; do
