@@ -128,7 +128,7 @@ edo udevadm settle --timeout=1
 
 # set up some nice block devices to mount
 edo mdadm --quiet --assemble --scan
-edo vgchange --quiet -a y
+edo vgchange -a y
 
 # the important bit: mount root, and /usr if defined
 root_mounted=""
