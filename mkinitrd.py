@@ -6,6 +6,7 @@ import tempfile
 import shutil
 import re
 import subprocess
+from glob import glob
 
 def check_output(*args, **kwargs):
     p = subprocess.Popen(*args, stdout=subprocess.PIPE, **kwargs)
@@ -58,11 +59,19 @@ def install_binary(path):
 def install_symlink(path, target):
     install_set[path] = Symlink(target)
 
+def install_tree(path):
+    for dirpath, dirnames, filenames in os.walk(path):
+        install_set[dirpath] = Dir()
+        for filename in filenames:
+            path = os.path.join(dirpath, filename)
+            install_set[path] = File(path)
+
 def main():
     install_dir('/newroot')
     install_dir('/sys')
     install_dir('/proc')
     install_dir('/dev')
+    install_dir('/run')
     install_symlink('/lib', 'lib64')
     install_binary('/bin/bash')
     install_binary('/sbin/udevd')
@@ -92,6 +101,8 @@ def main():
     install_binary('/bin/mount')
     install_binary('/bin/umount')
     install_binary('/sbin/switch_root')
+    install_tree('/lib64/udev')
+    install_tree('/etc/udev')
 
     tmpdir = tempfile.mkdtemp(prefix='mkinitrd')
     print 'Building initrd in %s ...' % tmpdir
@@ -121,10 +132,11 @@ edo mount -n -t tmpfs tmpfs /dev/shm
 edo mount -n -t sysfs none /sys
 edo mount -n -t proc none /proc
 cmdline=$(cat /proc/cmdline)
+edo mount -n -t tmpfs tmpfs /run
 
 # let udev do its thing
 edo udevd --daemon --resolve-names=never
-edo udevadm settle --timeout=1
+edo udevadm settle
 
 # set up some nice block devices to mount
 edo mdadm --quiet --assemble --scan
@@ -149,15 +161,11 @@ edo [ $root_mounted ]
     fi
 done ) </newroot/etc/fstab 
 
-# clean up our version of udevd
-edo udevadm control --stop-exec-queue
-hard=""
-while pidof udevd >/dev/null 2>&1; do 
-    kill $hard $(pidof udevd)
-    hard="-9"
-done
+# clean up
+edo udevadm control --exit
 edo umount -n /dev/pts
 edo umount -n /dev/shm
+edo mount --move /run /newroot/run
 
 # sanity check
 edo [ -x /newroot/sbin/init ]
