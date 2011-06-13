@@ -107,7 +107,7 @@ function edo() {
     $* 2>&1 >/dev/kmsg || ( echo "Bailing..." ; exec /bin/bash )
 }
 
-# mount import stuff
+# mount important stuff
 edo mount -n -t devtmpfs -o mode=0755 udev /dev
 edo mkdir /dev/shm /dev/pts 
 edo mkdir -p -m 0755 /dev/.udev/rules.d
